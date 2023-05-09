@@ -1,0 +1,125 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/css/bootstrap-datepicker.css" rel="stylesheet" />
+
+<link href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" rel="stylesheet" />
+<div class="row">
+    <div class="col-md-4">
+        <label for="">Select A Make</label>
+        <select class="Make form-control"></select>
+    </div>
+    <div class="col-md-4">
+        <label for="">Vehicle Types</label>
+        <select class="VehicleTypes form-control"></select>
+    </div>
+    <div class="col-md-4">
+        <label for="datepicker">Year</label>
+        <input type="text" class="form-control" id="datepicker" />
+    </div>
+</div>
+<br />
+<h3>Vehicle Types</h3>
+<br />
+<div class="row">
+
+    <div class="col-md-12 contentHtml"></div>
+    <div class="col-md-4 "></div>
+    <div class="col-md-4"></div>
+</div>
+
+
+<table id="myTable" class="display">
+    <thead>
+        <tr>
+            <th>Model Name</th>
+            <th>Make Name</th>
+        </tr>
+    </thead>
+</table>
+@section Scripts{
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.4/js/bootstrap-datepicker.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="//cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+
+    <script>
+        var RequestUrl = '@Url.Action("GetMakeList", "Home")';
+        var GetModelsForMakeIdYearUrl = '@Url.Action("GetModelsforMake", "Home")';
+        var VehicleTypeUrl = '@Url.Action("GetVehicleTypesByMakeId", "Home")';
+    $("#document").ready(function () {
+   
+       var table= $('#myTable').DataTable({
+            ajax: {
+                url: GetModelsForMakeIdYearUrl,
+                type: "POST",
+                data: function (d) {
+                    d.Id = $(".Make").val();
+                    d.Year = $("#datepicker").val();
+
+                },
+
+            },
+            columns: [
+                { data: 'make_Name' },
+                { data: 'model_Name' }]
+        });
+
+        $.ajax({
+            type: "POST",
+            url: RequestUrl,
+            dataType: "json",
+            success: function (response) {
+                $('.Make').select2({
+                    placeholder: 'Select an option',
+                    data: response
+
+                });
+            }
+        });
+
+
+        $("#datepicker").datepicker({
+            format: "yyyy",
+            viewMode: "years",
+            minViewMode: "years"
+        });
+
+
+
+        $(".Make").on("select2:select", function () {
+
+            var Id = $(this).val();
+            $.ajax({
+                type: "POST",
+                url: VehicleTypeUrl,
+                dataType: "json",
+                data: { "Id": Id},
+                success: function (response) {
+                    var htmlText = '';
+                    console.log(response);
+                    $.each(response, function (indexInArray, valueOfElement) {
+                        htmlText += '<div class="list-group"> <a href="#" class="list-group-item "> <h4 class="list-group-item-heading">' + valueOfElement.text+'</h4> <p class="list-group-item-text">...</p> </a> </div>'
+                        console.log(htmlText)
+                    });
+                    $(".contentHtml").html(htmlText);
+                }
+            });
+            table.ajax.reload();
+        });
+
+        $("#datepicker").change(function () {
+
+            table.ajax.reload();
+        });
+
+
+
+
+    });
+      
+
+    </script>
+}
