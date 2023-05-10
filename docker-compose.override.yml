@@ -1,0 +1,16 @@
+version: '3.4'
+
+services:
+  carassigment:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=https://+:443;http://+:80
+      - MakeUrlRequest=https://vpic.nhtsa.dot.gov/api/vehicles/getallmakes?format=json
+      - VehicleTypeUrlRequest=https://vpic.nhtsa.dot.gov/api/vehicles/GetVehicleTypesForMakeId/{0}?format=json
+      - ModelsforMakeUrl=https://vpic.nhtsa.dot.gov/api/vehicles/GetModelsForMakeIdYear/makeId/{0}/modelyear/{1}?format=json
+    ports:
+      - "80"
+      - "443"
+    volumes:
+      - ${APPDATA}/Microsoft/UserSecrets:C:\Users\ContainerUser\AppData\Roaming\Microsoft\UserSecrets:ro
+      - ${APPDATA}/ASP.NET/Https:C:\Users\ContainerUser\AppData\Roaming\ASP.NET\Https:ro
